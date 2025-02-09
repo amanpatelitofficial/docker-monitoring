@@ -7,9 +7,20 @@ services:
     volumes:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml
       - ./alert-rules.yml:/etc/prometheus/alert-rules.yml
+      - ./prometheus-data:/prometheus
     ports:
       - "9090:9090"
-
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--web.enable-lifecycle"
+      - "--storage.tsdb.retention.time=24h"
+      - "--storage.tsdb.retention.size=2GB"
+      - "--web.enable-admin-api"
+      - "--web.external-url=http://localhost:9090"
+      - "--storage.tsdb.min-block-duration=2h"
+      - "--storage.tsdb.max-block-duration=2h"
+    
   grafana:
     image: grafana/grafana:latest
     container_name: grafana
@@ -51,4 +62,16 @@ services:
       - /var/log:/var/log
     command: -config.file=/etc/promtail/promtail-config.yml
 
-
+  thanos-sidecar:
+    image: quay.io/thanos/thanos:v0.32.4
+    container_name: thanos-sidecar
+    command:
+      - "sidecar"
+      - "--tsdb.path=/prometheus"
+      - "--objstore.config-file=/etc/thanos/s3.yml"
+      - "--prometheus.url=http://prometheus:9090"
+    volumes:
+      - ./thanos-s3.yml:/etc/thanos/s3.yml
+      - ./prometheus-data:/prometheus
+    ports:
+      - "10901:10901"
