@@ -1,0 +1,10 @@
+type: S3
+config:
+  bucket: "<your-s3-bucket-name>"
+  endpoint: "s3.<your-region>.amazonaws.com"
+  access_key: "<your-access-key>"
+  secret_key: "<your-secret-key>"
+  insecure: false
+  signature_version2: false
+  put_user_metadata:
+    "X-Amz-Storage-Class": "STANDARD"
