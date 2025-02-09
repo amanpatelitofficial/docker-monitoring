@@ -31,8 +31,11 @@ scrape_configs:
         replacement: 3.110.171.219:9115
 
 remote_write:
-  - url: "s3://<your-s3-bucket-name>/prometheus/"
-    bearer_token: "<your-s3-auth-token>"
+  - url: "http://thanos-sidecar:10901/api/v1/receive"
+    queue_config:
+      batch_send_deadline: 5s
+      max_shards: 30
+      max_samples_per_send: 5000
 
 alerting:
   alertmanagers:
