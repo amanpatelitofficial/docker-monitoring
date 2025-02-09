@@ -1,0 +1,44 @@
+global:
+  scrape_interval: 15s
+
+scrape_configs:
+  - job_name: "node_exporter"
+    static_configs:
+      - targets:
+          - "<Server_1_IP>:9100"
+          - "3.110.183.57:9100"
+
+  - job_name: "docker"
+    static_configs:
+      - targets:
+          - "<Server_1_IP>:8081"
+          - "3.110.183.57:8081"
+
+  - job_name: "website"
+    metrics_path: /probe
+    params:
+      module: [http_2xx]
+    static_configs:
+      - targets:
+          - "https://amanops.com"
+          - "http://<Server_1_IP>:8080"
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: 3.110.171.219:9115
+
+remote_write:
+  - url: "s3://<your-s3-bucket-name>/prometheus/"
+    bearer_token: "<your-s3-auth-token>"
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+            - "3.110.171.219:9093"
+
+rule_files:
+  - "/etc/prometheus/alert_rule.yml"
